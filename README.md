@@ -143,30 +143,6 @@ We welcome contributions! Here's how you can help:
 - Ensure accessibility compliance
 - Update documentation as needed
 
-## 📝 Changelog
-
-### Version 1.0.0 (Current)
-- Initial release
-- Website blocking functionality
-- Pomodoro timer with customizable intervals
-- Task management system
-- Productivity analytics
-- Settings and customization options
-- Data import/export capabilities
-
-## 🐛 Bug Reports & Feature Requests
-
-If you encounter any bugs or have feature requests:
-
-1. **Check existing issues** on GitHub
-2. **Create a new issue** with detailed information
-3. **Include steps to reproduce** for bugs
-4. **Describe the expected behavior** clearly
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## 🙏 Acknowledgments
 
 - **Pomodoro Technique** by Francesco Cirillo
