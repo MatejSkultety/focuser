@@ -1,0 +1,411 @@
+/* Focuser Extension Content Script Styles */
+
+/* Blocked Overlay */
+#focuser-blocked-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.focuser-blocked-content {
+  text-align: center;
+  max-width: 600px;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.focuser-blocked-icon {
+  margin-bottom: 24px;
+}
+
+.focuser-blocked-icon svg {
+  width: 80px;
+  height: 80px;
+  stroke: white;
+  stroke-width: 1.5;
+}
+
+.focuser-blocked-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.focuser-blocked-message {
+  font-size: 18px;
+  margin-bottom: 32px;
+  opacity: 0.9;
+}
+
+.focuser-blocked-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.focuser-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+}
+
+.focuser-btn-primary {
+  background: white;
+  color: #667eea;
+}
+
+.focuser-btn-primary:hover {
+  background: #f8fafc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.focuser-btn-secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.focuser-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.focuser-blocked-tips {
+  text-align: left;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.focuser-blocked-tips h3 {
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.focuser-blocked-tips ul {
+  list-style: none;
+  padding: 0;
+}
+
+.focuser-blocked-tips li {
+  padding: 8px 0;
+  position: relative;
+  padding-left: 20px;
+}
+
+.focuser-blocked-tips li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #10b981;
+  font-weight: bold;
+}
+
+.focuser-blocked-footer {
+  opacity: 0.7;
+  font-size: 14px;
+}
+
+/* Timer Overlay */
+#focuser-timer-overlay {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 2147483646;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  min-width: 280px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.focuser-timer-content {
+  padding: 20px;
+}
+
+.focuser-timer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.focuser-timer-session {
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+.focuser-timer-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.focuser-timer-close:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.focuser-timer-display {
+  font-size: 28px;
+  font-weight: 300;
+  color: #1f2937;
+  text-align: center;
+  margin-bottom: 16px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+}
+
+.focuser-timer-progress {
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.focuser-timer-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.focuser-timer-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.focuser-timer-btn {
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.focuser-timer-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.focuser-timer-btn:active {
+  background: #f3f4f6;
+}
+
+/* Focus Mode Indicator */
+.focuser-focus-indicator {
+  position: fixed;
+  top: 50%;
+  left: 20px;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  z-index: 2147483645;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .focuser-blocked-content {
+    max-width: 90vw;
+    padding: 32px 24px;
+  }
+  
+  .focuser-blocked-title {
+    font-size: 28px;
+  }
+  
+  .focuser-blocked-message {
+    font-size: 16px;
+  }
+  
+  .focuser-blocked-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .focuser-btn {
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  #focuser-timer-overlay {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .focuser-blocked-content {
+    padding: 24px 16px;
+  }
+  
+  .focuser-blocked-title {
+    font-size: 24px;
+  }
+  
+  .focuser-blocked-icon svg {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .focuser-blocked-tips {
+    padding: 16px;
+  }
+  
+  .focuser-timer-display {
+    font-size: 24px;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  #focuser-timer-overlay {
+    background: rgba(31, 41, 55, 0.95);
+    border-color: rgba(75, 85, 99, 0.3);
+  }
+  
+  .focuser-timer-session,
+  .focuser-timer-display {
+    color: #f9fafb;
+  }
+  
+  .focuser-timer-close {
+    color: #9ca3af;
+  }
+  
+  .focuser-timer-close:hover {
+    background: #374151;
+    color: #f3f4f6;
+  }
+  
+  .focuser-timer-progress {
+    background: #374151;
+  }
+  
+  .focuser-timer-btn {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+  
+  .focuser-timer-btn:hover {
+    background: #4b5563;
+    border-color: #6b7280;
+  }
+}
+
+/* Animation */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+#focuser-timer-overlay {
+  animation: slideInRight 0.3s ease-out;
+}
+
+#focuser-blocked-overlay {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  #focuser-blocked-overlay {
+    background: #000000;
+  }
+  
+  .focuser-blocked-content {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid white;
+  }
+  
+  .focuser-btn {
+    border: 2px solid currentColor;
+  }
+  
+  #focuser-timer-overlay {
+    border: 2px solid #000000;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

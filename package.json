@@ -1,0 +1,40 @@
+{
+  "name": "focuser",
+  "version": "1.0.0",
+  "description": "A browser extension for better productivity and focus with website blocking, pomodoro timer, and task management",
+  "main": "background.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm run build:icons && npm run build:manifest",
+    "build:icons": "echo \"Icons will be generated here\"",
+    "build:manifest": "echo \"Manifest validated\"",
+    "dev": "echo \"Development mode - load extension in browser\"",
+    "lint": "echo \"Linting will be added here\"",
+    "format": "echo \"Code formatting will be added here\""
+  },
+  "keywords": [
+    "browser-extension",
+    "productivity",
+    "focus",
+    "pomodoro",
+    "website-blocking",
+    "task-management",
+    "chrome-extension"
+  ],
+  "author": "Matej Skultety",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MatejSkultety/focuser.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MatejSkultety/focuser/issues"
+  },
+  "homepage": "https://github.com/MatejSkultety/focuser#readme",
+  "devDependencies": {
+    "@types/chrome": "^0.0.246"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

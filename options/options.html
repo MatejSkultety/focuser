@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focuser Settings</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>
+                <img src="../icons/icon32.png" alt="Focuser" class="logo-icon">
+                Focuser Settings
+            </h1>
+        </header>
+
+        <main class="main">
+            <!-- Website Blocking Settings -->
+            <section class="settings-section">
+                <h2>Website Blocking</h2>
+                <div class="setting-item">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="blockingEnabled">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <div class="setting-info">
+                        <div class="setting-title">Enable Website Blocking</div>
+                        <div class="setting-description">Block access to distracting websites during focus sessions</div>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="strictMode">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <div class="setting-info">
+                        <div class="setting-title">Strict Mode</div>
+                        <div class="setting-description">Prevent users from disabling blocking during active sessions</div>
+                    </div>
+                </div>
+
+                <div class="blocked-sites-section">
+                    <h3>Blocked Websites</h3>
+                    <div class="site-input-group">
+                        <input type="text" id="newSiteInput" placeholder="Enter website URL (e.g., facebook.com)" class="site-input">
+                        <button id="addSiteBtn" class="btn btn-primary">Add Site</button>
+                    </div>
+                    <div class="sites-list" id="blockedSitesList">
+                        <!-- Blocked sites will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pomodoro Timer Settings -->
+            <section class="settings-section">
+                <h2>Pomodoro Timer</h2>
+                <div class="setting-row">
+                    <div class="setting-item">
+                        <label for="workDuration" class="setting-label">Work Duration (minutes)</label>
+                        <input type="number" id="workDuration" min="1" max="120" value="25" class="time-input">
+                    </div>
+                    <div class="setting-item">
+                        <label for="breakDuration" class="setting-label">Break Duration (minutes)</label>
+                        <input type="number" id="breakDuration" min="1" max="60" value="5" class="time-input">
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-item">
+                        <label for="longBreakDuration" class="setting-label">Long Break Duration (minutes)</label>
+                        <input type="number" id="longBreakDuration" min="1" max="120" value="15" class="time-input">
+                    </div>
+                    <div class="setting-item">
+                        <label for="sessionsUntilLongBreak" class="setting-label">Sessions Until Long Break</label>
+                        <input type="number" id="sessionsUntilLongBreak" min="1" max="10" value="4" class="time-input">
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoStartBreaks">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <div class="setting-info">
+                        <div class="setting-title">Auto-start Breaks</div>
+                        <div class="setting-description">Automatically start break timers when work sessions end</div>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoStartWork">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <div class="setting-info">
+                        <div class="setting-title">Auto-start Work Sessions</div>
+                        <div class="setting-description">Automatically start work sessions when breaks end</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notifications Settings -->
+            <section class="settings-section">
+                <h2>Notifications</h2>
+                <div class="setting-item">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="notificationsEnabled">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <div class="setting-info">
+                        <div class="setting-title">Enable Notifications</div>
+                        <div class="setting-description">Show notifications for timer events and achievements</div>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="soundEnabled">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <div class="setting-info">
+                        <div class="setting-title">Sound Notifications</div>
+                        <div class="setting-description">Play sound alerts when timers complete</div>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="blockingNotifications">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <div class="setting-info">
+                        <div class="setting-title">Blocking Notifications</div>
+                        <div class="setting-description">Show notifications when websites are blocked</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Task Management Settings -->
+            <section class="settings-section">
+                <h2>Task Management</h2>
+                <div class="setting-item">
+                    <label for="defaultTaskPriority" class="setting-label">Default Task Priority</label>
+                    <select id="defaultTaskPriority" class="select-input">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label for="defaultTaskCategory" class="setting-label">Default Task Category</label>
+                    <input type="text" id="defaultTaskCategory" placeholder="e.g., Work, Personal" class="text-input">
+                </div>
+
+                <div class="setting-item">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="showCompletedTasks">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <div class="setting-info">
+                        <div class="setting-title">Show Completed Tasks</div>
+                        <div class="setting-description">Display completed tasks in the task list</div>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="taskReminders">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <div class="setting-info">
+                        <div class="setting-title">Task Reminders</div>
+                        <div class="setting-description">Show reminders for overdue tasks</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Management -->
+            <section class="settings-section">
+                <h2>Data Management</h2>
+                <div class="data-actions">
+                    <button class="btn btn-secondary" id="exportDataBtn">Export Data</button>
+                    <button class="btn btn-secondary" id="importDataBtn">Import Data</button>
+                    <button class="btn btn-danger" id="resetDataBtn">Reset All Data</button>
+                </div>
+                <input type="file" id="importFileInput" accept=".json" style="display: none;">
+            </section>
+
+            <!-- Statistics -->
+            <section class="settings-section">
+                <h2>Statistics</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalSessions">0</div>
+                        <div class="stat-label">Total Focus Sessions</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalFocusTime">0h</div>
+                        <div class="stat-label">Total Focus Time</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalTasksCompleted">0</div>
+                        <div class="stat-label">Tasks Completed</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalSitesBlocked">0</div>
+                        <div class="stat-label">Sites Blocked</div>
+                    </div>
+                </div>
+                <div class="stats-actions">
+                    <button class="btn btn-secondary" id="resetStatsBtn">Reset Statistics</button>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <div class="save-status" id="saveStatus">Settings saved automatically</div>
+            <button class="btn btn-primary" id="saveSettingsBtn">Save Settings</button>
+        </footer>
+    </div>
+
+    <script src="options.js"></script>
+</body>
+</html>
