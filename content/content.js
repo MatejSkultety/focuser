@@ -96,10 +96,10 @@ class FocuserContent {
           This website is blocked to help you stay focused and productive.
         </p>
         <div class="focuser-blocked-actions">
-          <button class="focuser-btn focuser-btn-primary" onclick="history.back()">
+          <button class="focuser-btn focuser-btn-primary" data-action="go-back">
             Go Back
           </button>
-          <button class="focuser-btn focuser-btn-secondary" onclick="focuserContent.requestUnblock()">
+          <button class="focuser-btn focuser-btn-secondary" data-action="request-unblock">
             Request Access
           </button>
         </div>
@@ -118,8 +118,24 @@ class FocuserContent {
       </div>
     `;
 
+    // Add event listeners
+    this.overlayElement.addEventListener('click', this.handleBlockedOverlayClick.bind(this));
+
     document.body.appendChild(this.overlayElement);
     document.body.style.overflow = 'hidden';
+  }
+
+  handleBlockedOverlayClick(event) {
+    const action = event.target.getAttribute('data-action');
+    
+    switch (action) {
+      case 'go-back':
+        history.back();
+        break;
+      case 'request-unblock':
+        this.requestUnblock();
+        break;
+    }
   }
 
   hideBlockedOverlay() {
@@ -169,24 +185,43 @@ class FocuserContent {
       <div class="focuser-timer-content">
         <div class="focuser-timer-header">
           <span class="focuser-timer-session">${timerData.sessionType}</span>
-          <button class="focuser-timer-close" onclick="focuserContent.hideTimerOverlay()">×</button>
+          <button class="focuser-timer-close" data-action="close-timer">×</button>
         </div>
         <div class="focuser-timer-display">${timerData.timeRemaining}</div>
         <div class="focuser-timer-progress">
           <div class="focuser-timer-progress-bar" style="width: ${timerData.progress}%"></div>
         </div>
         <div class="focuser-timer-controls">
-          <button class="focuser-timer-btn" onclick="focuserContent.pauseTimer()">
+          <button class="focuser-timer-btn" data-action="pause-timer">
             ${timerData.isPaused ? 'Resume' : 'Pause'}
           </button>
-          <button class="focuser-timer-btn" onclick="focuserContent.stopTimer()">
+          <button class="focuser-timer-btn" data-action="stop-timer">
             Stop
           </button>
         </div>
       </div>
     `;
 
+    // Add event listeners
+    this.timerOverlay.addEventListener('click', this.handleTimerOverlayClick.bind(this));
+
     document.body.appendChild(this.timerOverlay);
+  }
+
+  handleTimerOverlayClick(event) {
+    const action = event.target.getAttribute('data-action');
+    
+    switch (action) {
+      case 'close-timer':
+        this.hideTimerOverlay();
+        break;
+      case 'pause-timer':
+        this.pauseTimer();
+        break;
+      case 'stop-timer':
+        this.stopTimer();
+        break;
+    }
   }
 
   hideTimerOverlay() {
@@ -202,7 +237,7 @@ class FocuserContent {
     const sessionElement = this.timerOverlay.querySelector('.focuser-timer-session');
     const displayElement = this.timerOverlay.querySelector('.focuser-timer-display');
     const progressElement = this.timerOverlay.querySelector('.focuser-timer-progress-bar');
-    const pauseButton = this.timerOverlay.querySelector('.focuser-timer-btn');
+    const pauseButton = this.timerOverlay.querySelector('[data-action="pause-timer"]');
 
     if (sessionElement) sessionElement.textContent = timerData.sessionType;
     if (displayElement) displayElement.textContent = timerData.timeRemaining;
@@ -276,6 +311,3 @@ class FocuserContent {
 
 // Initialize content script
 const focuserContent = new FocuserContent();
-
-// Make it globally available for inline event handlers
-window.focuserContent = focuserContent;

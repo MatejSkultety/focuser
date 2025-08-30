@@ -276,7 +276,7 @@ class FocuserPopup {
     tasksList.innerHTML = filteredTasks.map(task => `
       <div class="task-item priority-${task.priority} ${task.status === 'completed' ? 'task-completed' : ''}" data-task-id="${task.id}">
         <input type="checkbox" class="task-checkbox" ${task.status === 'completed' ? 'checked' : ''} 
-               onchange="popup.toggleTaskComplete('${task.id}', this.checked)">
+               data-action="toggle-complete" data-task-id="${task.id}">
         <div class="task-content">
           <div class="task-title">${this.escapeHtml(task.title)}</div>
           <div class="task-meta">
@@ -286,13 +286,13 @@ class FocuserPopup {
           </div>
         </div>
         <div class="task-actions">
-          <button class="task-action-btn" onclick="popup.editTask('${task.id}')" title="Edit">
+          <button class="task-action-btn" data-action="edit-task" data-task-id="${task.id}" title="Edit">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="m18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
             </svg>
           </button>
-          <button class="task-action-btn" onclick="popup.deleteTask('${task.id}')" title="Delete">
+          <button class="task-action-btn" data-action="delete-task" data-task-id="${task.id}" title="Delete">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <polyline points="3,6 5,6 21,6"></polyline>
               <path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1,2-2h4a2,2 0 0,1,2,2v2"></path>
@@ -301,6 +301,47 @@ class FocuserPopup {
         </div>
       </div>
     `).join('');
+
+    // Add event delegation for task interactions
+    this.setupTaskEventListeners(tasksList);
+  }
+
+  setupTaskEventListeners(tasksList) {
+    // Remove existing listeners to prevent duplicates
+    tasksList.removeEventListener('click', this.handleTaskClick);
+    tasksList.removeEventListener('change', this.handleTaskChange);
+    
+    // Add new listeners
+    this.handleTaskClick = this.handleTaskClick.bind(this);
+    this.handleTaskChange = this.handleTaskChange.bind(this);
+    
+    tasksList.addEventListener('click', this.handleTaskClick);
+    tasksList.addEventListener('change', this.handleTaskChange);
+  }
+
+  handleTaskClick(event) {
+    const action = event.target.getAttribute('data-action');
+    const taskId = event.target.getAttribute('data-task-id');
+    
+    if (!action || !taskId) return;
+    
+    switch (action) {
+      case 'edit-task':
+        this.editTask(taskId);
+        break;
+      case 'delete-task':
+        this.deleteTask(taskId);
+        break;
+    }
+  }
+
+  handleTaskChange(event) {
+    const action = event.target.getAttribute('data-action');
+    const taskId = event.target.getAttribute('data-task-id');
+    
+    if (action === 'toggle-complete' && taskId) {
+      this.toggleTaskComplete(taskId, event.target.checked);
+    }
   }
 
   async toggleTaskComplete(taskId, completed) {
@@ -481,8 +522,5 @@ class FocuserPopup {
 
 // Initialize popup when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  window.popup = new FocuserPopup();
+  new FocuserPopup();
 });
-
-// Global functions for inline event handlers
-window.popup = null;

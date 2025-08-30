@@ -266,10 +266,10 @@
         </div>
 
         <div class="actions">
-            <button class="btn btn-primary" onclick="history.back()">
+            <button class="btn btn-primary" data-action="go-back">
                 ← Go Back
             </button>
-            <button class="btn btn-secondary" onclick="openFocuser()">
+            <button class="btn btn-secondary" data-action="open-focuser">
                 Open Focuser
             </button>
         </div>
@@ -393,6 +393,25 @@
 
         // Change quote every 30 seconds
         setInterval(updateQuote, 30000);
+
+        // Add event listeners for buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const actionsContainer = document.querySelector('.actions');
+            if (actionsContainer) {
+                actionsContainer.addEventListener('click', function(event) {
+                    const action = event.target.getAttribute('data-action');
+                    
+                    switch (action) {
+                        case 'go-back':
+                            history.back();
+                            break;
+                        case 'open-focuser':
+                            openFocuser();
+                            break;
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

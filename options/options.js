@@ -193,11 +193,32 @@ class FocuserOptions {
     sitesList.innerHTML = this.blockedSites.map(site => `
       <div class="site-item">
         <span class="site-url">${this.escapeHtml(site)}</span>
-        <button class="remove-site-btn" onclick="options.removeBlockedSite(${JSON.stringify(site)})">
+        <button class="remove-site-btn" data-action="remove-site" data-site="${this.escapeHtml(site)}">
           Remove
         </button>
       </div>
     `).join('');
+
+    // Add event delegation for site removal
+    this.setupSiteEventListeners(sitesList);
+  }
+
+  setupSiteEventListeners(sitesList) {
+    // Remove existing listener to prevent duplicates
+    sitesList.removeEventListener('click', this.handleSiteClick);
+    
+    // Add new listener
+    this.handleSiteClick = this.handleSiteClick.bind(this);
+    sitesList.addEventListener('click', this.handleSiteClick);
+  }
+
+  handleSiteClick(event) {
+    const action = event.target.getAttribute('data-action');
+    const site = event.target.getAttribute('data-site');
+    
+    if (action === 'remove-site' && site) {
+      this.removeBlockedSite(site);
+    }
   }
 
   async addBlockedSite() {
@@ -469,8 +490,5 @@ class FocuserOptions {
 
 // Initialize options page when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  window.options = new FocuserOptions();
+  new FocuserOptions();
 });
-
-// Global reference for inline event handlers
-window.options = null;
