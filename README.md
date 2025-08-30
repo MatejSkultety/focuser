@@ -128,13 +128,33 @@ Focuser is a comprehensive browser extension designed to help you stay focused a
 
 We welcome contributions! Here's how you can help:
 
+### Pull Request Workflow
+
+**⚠️ Important: The `main` branch is protected. All changes must be made through pull requests.**
+
 1. **Fork the repository**
 2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
 3. **Make your changes**: Follow the existing code style
 4. **Test thoroughly**: Ensure all features work as expected
+   ```bash
+   npm run validate  # Runs linting, build, and tests
+   ```
 5. **Commit your changes**: `git commit -m 'Add amazing feature'`
 6. **Push to the branch**: `git push origin feature/amazing-feature`
-7. **Open a Pull Request**: Describe your changes and their benefits
+7. **Open a Pull Request**: 
+   - Describe your changes and their benefits
+   - Fill out the PR template completely
+   - Wait for automated checks to pass
+   - Address any review feedback
+   - **Requires at least 1 approval** from a maintainer before merging
+
+### Branch Protection Rules
+
+- ❌ **No direct pushes to `main`** - All changes require pull requests
+- ✅ **Required reviews** - At least 1 approval needed before merging
+- ✅ **Status checks** - Automated CI/CD must pass (linting, building, testing)
+- ✅ **Up-to-date branches** - PRs must be current with the latest `main`
+- ✅ **Conversation resolution** - All review comments must be addressed
 
 ### Development Guidelines
 - Follow existing code style and patterns
@@ -142,6 +162,8 @@ We welcome contributions! Here's how you can help:
 - Test across different browsers and screen sizes
 - Ensure accessibility compliance
 - Update documentation as needed
+- Run `npm run validate` before creating a PR
+- Use descriptive commit messages and PR titles
 
 ## 🙏 Acknowledgments
 
