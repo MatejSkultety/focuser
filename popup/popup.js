@@ -501,7 +501,7 @@ class FocuserPopup {
   // More secure method: create DOM elements programmatically
   createTaskElement(task) {
     const taskDiv = document.createElement('div');
-    taskDiv.className = `task-item priority-${this.escapeHtml(task.priority)} ${task.status === 'completed' ? 'task-completed' : ''}`;
+    taskDiv.className = `task-item priority-${task.priority} ${task.status === 'completed' ? 'task-completed' : ''}`;
     taskDiv.setAttribute('data-task-id', task.id);
 
     const checkbox = document.createElement('input');
