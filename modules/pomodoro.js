@@ -31,8 +31,7 @@ export class PomodoroTimer {
     await chrome.alarms.clear(alarmName);
 
     // Create new alarm
-    await chrome.alarms.create(alarmName, {
-      delayInMinutes: workDuration
+      delayInMinutes: Math.floor(workDuration)
     });
 
     this.isRunning = true;
