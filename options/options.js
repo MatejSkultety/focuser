@@ -193,7 +193,7 @@ class FocuserOptions {
     sitesList.innerHTML = this.blockedSites.map(site => `
       <div class="site-item">
         <span class="site-url">${this.escapeHtml(site)}</span>
-        <button class="remove-site-btn" onclick="options.removeBlockedSite('${this.escapeHtml(site)}')">
+        <button class="remove-site-btn" onclick="options.removeBlockedSite(${JSON.stringify(site)})">
           Remove
         </button>
       </div>
