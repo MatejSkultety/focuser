@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focuser</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="logo">
+                <img src="../icons/icon32.png" alt="Focuser" class="logo-icon">
+                Focuser
+            </h1>
+            <button class="settings-btn" id="settingsBtn" title="Settings">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="m19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="focus">Focus</button>
+            <button class="tab-btn" data-tab="tasks">Tasks</button>
+            <button class="tab-btn" data-tab="stats">Stats</button>
+        </nav>
+
+        <!-- Focus Tab -->
+        <div class="tab-content active" id="focusTab">
+            <!-- Website Blocking Section -->
+            <section class="section">
+                <div class="section-header">
+                    <h3>Website Blocking</h3>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="blockingToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="blocking-status" id="blockingStatus">
+                    <span class="status-text">Disabled</span>
+                    <span class="sites-count">0 sites blocked</span>
+                </div>
+            </section>
+
+            <!-- Pomodoro Timer Section -->
+            <section class="section">
+                <div class="section-header">
+                    <h3>Pomodoro Timer</h3>
+                </div>
+                <div class="timer-container">
+                    <div class="timer-display" id="timerDisplay">25:00</div>
+                    <div class="timer-session" id="timerSession">Work Session</div>
+                    <div class="timer-controls">
+                        <button class="btn btn-primary" id="startTimer">Start</button>
+                        <button class="btn btn-secondary" id="pauseTimer" style="display: none;">Pause</button>
+                        <button class="btn btn-secondary" id="stopTimer" style="display: none;">Stop</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Tasks Section -->
+            <section class="section">
+                <div class="section-header">
+                    <h3>Quick Add Task</h3>
+                </div>
+                <div class="quick-task">
+                    <input type="text" id="quickTaskInput" placeholder="Enter a task..." class="task-input">
+                    <button class="btn btn-primary" id="addTaskBtn">Add</button>
+                </div>
+            </section>
+        </div>
+
+        <!-- Tasks Tab -->
+        <div class="tab-content" id="tasksTab">
+            <div class="tasks-header">
+                <h3>Tasks</h3>
+                <div class="task-filters">
+                    <select id="taskFilter" class="filter-select">
+                        <option value="all">All Tasks</option>
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+            </div>
+            <div class="tasks-list" id="tasksList">
+                <!-- Tasks will be dynamically populated -->
+            </div>
+            <button class="btn btn-primary add-task-btn" id="addDetailedTask">Add Detailed Task</button>
+        </div>
+
+        <!-- Statistics Tab -->
+        <div class="tab-content" id="statsTab">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="statSessions">0</div>
+                    <div class="stat-label">Focus Sessions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statFocusTime">0h</div>
+                    <div class="stat-label">Total Focus Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statTasksCompleted">0</div>
+                    <div class="stat-label">Tasks Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statSitesBlocked">0</div>
+                    <div class="stat-label">Sites Blocked</div>
+                </div>
+            </div>
+            
+            <div class="productivity-score">
+                <h4>Today's Productivity</h4>
+                <div class="score-circle" id="productivityScore">
+                    <span class="score-number">85</span>
+                    <span class="score-percent">%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Detail Modal -->
+    <div class="modal" id="taskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add Task</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    <div class="form-group">
+                        <label for="taskTitle">Title *</label>
+                        <input type="text" id="taskTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDescription">Description</label>
+                        <textarea id="taskDescription" rows="3"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskPriority">Priority</label>
+                            <select id="taskPriority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskCategory">Category</label>
+                            <input type="text" id="taskCategory" placeholder="e.g., Work, Personal">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="estimatedTime">Estimated Time (minutes)</label>
+                        <input type="number" id="estimatedTime" min="1" placeholder="25">
+                    </div>
+                    <div class="form-group">
+                        <label for="taskTags">Tags (comma-separated)</label>
+                        <input type="text" id="taskTags" placeholder="urgent, meeting, project">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelTask">Cancel</button>
+                <button class="btn btn-primary" id="saveTask">Save Task</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
