@@ -286,8 +286,12 @@ class FocuserPopup {
 
   setupTaskEventListeners(tasksList) {
     // Remove existing listeners to prevent duplicates
-    tasksList.removeEventListener('click', this.handleTaskClick);
-    tasksList.removeEventListener('change', this.handleTaskChange);
+    if (this.handleTaskClick) {
+      tasksList.removeEventListener('click', this.handleTaskClick);
+    }
+    if (this.handleTaskChange) {
+      tasksList.removeEventListener('change', this.handleTaskChange);
+    }
     
     // Add new listeners
     this.handleTaskClick = this.handleTaskClick.bind(this);
