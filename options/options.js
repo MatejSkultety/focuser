@@ -5,6 +5,9 @@ class FocuserOptions {
     this.blockedSites = [];
     this.saveTimeout = null;
     
+    // Bind event handlers once
+    this.handleSiteClick = this.handleSiteClick.bind(this);
+    
     this.init();
   }
 
@@ -226,7 +229,6 @@ class FocuserOptions {
     sitesList.removeEventListener('click', this.handleSiteClick);
     
     // Add new listener
-    this.handleSiteClick = this.handleSiteClick.bind(this);
     sitesList.addEventListener('click', this.handleSiteClick);
   }
 

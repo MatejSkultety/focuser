@@ -5,6 +5,10 @@ class FocuserPopup {
     this.currentTaskId = null;
     this.timerInterval = null;
     
+    // Bind event handlers once
+    this.handleTaskClick = this.handleTaskClick.bind(this);
+    this.handleTaskChange = this.handleTaskChange.bind(this);
+    
     this.init();
   }
 
@@ -286,17 +290,10 @@ class FocuserPopup {
 
   setupTaskEventListeners(tasksList) {
     // Remove existing listeners to prevent duplicates
-    if (this.handleTaskClick) {
-      tasksList.removeEventListener('click', this.handleTaskClick);
-    }
-    if (this.handleTaskChange) {
-      tasksList.removeEventListener('change', this.handleTaskChange);
-    }
+    tasksList.removeEventListener('click', this.handleTaskClick);
+    tasksList.removeEventListener('change', this.handleTaskChange);
     
     // Add new listeners
-    this.handleTaskClick = this.handleTaskClick.bind(this);
-    this.handleTaskChange = this.handleTaskChange.bind(this);
-    
     tasksList.addEventListener('click', this.handleTaskClick);
     tasksList.addEventListener('change', this.handleTaskChange);
   }
