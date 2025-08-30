@@ -1,19 +1,29 @@
 // Website blocking manager for Focuser extension
-import { StorageManager } from './storage.js';
 
 export class BlockingManager {
   constructor() {
-    this.storageManager = new StorageManager();
+    this.storageManager = null;
     this.isBlocking = false;
   }
 
+  async ensureStorageManager() {
+    if (!this.storageManager) {
+      const { StorageManager } = await import('./storage.js');
+      this.storageManager = new StorageManager();
+    }
+  }
+
   async init() {
+    await this.ensureStorageManager();
+    
     this.isBlocking = await this.storageManager.getSetting('blockingEnabled');
     await this.updateBlockingRules();
     console.log('Blocking manager initialized, blocking enabled:', this.isBlocking);
   }
 
   async toggleBlocking() {
+    await this.ensureStorageManager();
+    
     this.isBlocking = !this.isBlocking;
     await this.storageManager.setSetting('blockingEnabled', this.isBlocking);
     await this.updateBlockingRules();
@@ -23,12 +33,16 @@ export class BlockingManager {
   }
 
   async updateBlockedSites(sites) {
+    await this.ensureStorageManager();
+    
     await this.storageManager.setBlockedSites(sites);
     await this.updateBlockingRules();
     console.log('Blocked sites updated:', sites);
   }
 
   async updateBlockingRules() {
+    await this.ensureStorageManager();
+    
     try {
       // Clear existing rules
       const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
@@ -99,6 +113,8 @@ export class BlockingManager {
   }
 
   async checkAndBlockUrl(url, tabId) {
+    await this.ensureStorageManager();
+    
     if (!this.isBlocking) return false;
 
     const blockedSites = await this.storageManager.getBlockedSites();
@@ -124,6 +140,8 @@ export class BlockingManager {
   }
 
   async getStatus() {
+    await this.ensureStorageManager();
+    
     const blockedSites = await this.storageManager.getBlockedSites();
     return {
       enabled: this.isBlocking,
@@ -133,6 +151,8 @@ export class BlockingManager {
   }
 
   async addBlockedSite(site) {
+    await this.ensureStorageManager();
+    
     const blockedSites = await this.storageManager.getBlockedSites();
     if (!blockedSites.includes(site)) {
       blockedSites.push(site);
@@ -141,6 +161,8 @@ export class BlockingManager {
   }
 
   async removeBlockedSite(site) {
+    await this.ensureStorageManager();
+    
     const blockedSites = await this.storageManager.getBlockedSites();
     const index = blockedSites.indexOf(site);
     if (index > -1) {

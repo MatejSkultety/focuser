@@ -1,41 +1,62 @@
 // Background service worker for Focuser extension
-import { BlockingManager } from './modules/blocking.js';
-import { PomodoroTimer } from './modules/pomodoro.js';
-import { TaskManager } from './modules/tasks.js';
-import { StorageManager } from './modules/storage.js';
 
 class FocuserBackground {
   constructor() {
-    this.blockingManager = new BlockingManager();
-    this.pomodoroTimer = new PomodoroTimer();
-    this.taskManager = new TaskManager();
-    this.storageManager = new StorageManager();
+    this.blockingManager = null;
+    this.pomodoroTimer = null;
+    this.taskManager = null;
+    this.storageManager = null;
     
     this.init();
   }
 
   async init() {
-    // Initialize extension
-    await this.storageManager.init();
-    await this.blockingManager.init();
-    
-    // Set up event listeners
-    this.setupEventListeners();
-    
-    console.log('Focuser background service worker initialized');
+    try {
+      // Dynamically import modules
+      const [
+        { BlockingManager },
+        { PomodoroTimer },
+        { TaskManager },
+        { StorageManager }
+      ] = await Promise.all([
+        import('./modules/blocking.js'),
+        import('./modules/pomodoro.js'),
+        import('./modules/tasks.js'),
+        import('./modules/storage.js')
+      ]);
+
+      // Initialize instances
+      this.blockingManager = new BlockingManager();
+      this.pomodoroTimer = new PomodoroTimer();
+      this.taskManager = new TaskManager();
+      this.storageManager = new StorageManager();
+
+      // Initialize extension
+      await this.storageManager.init();
+      await this.blockingManager.init();
+      
+      // Set up event listeners
+      this.setupEventListeners();
+      
+      console.log('Focuser background service worker initialized');
+    } catch (error) {
+      console.error('Failed to initialize Focuser background:', error);
+    }
   }
 
   setupEventListeners() {
     // Listen for tab updates to check blocked websites
     chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-      if (changeInfo.status === 'complete' && tab.url) {
+      if (changeInfo.status === 'complete' && tab.url && this.blockingManager) {
         this.blockingManager.checkAndBlockUrl(tab.url, tabId);
       }
     });
 
     // Listen for alarm events (for pomodoro timer)
     chrome.alarms.onAlarm.addListener((alarm) => {
-      this.pomodoroTimer.handleAlarm(alarm);
+      if (this.pomodoroTimer) {
+        this.pomodoroTimer.handleAlarm(alarm);
+      }
     });
 
     // Listen for messages from popup and content scripts
@@ -54,6 +75,12 @@ class FocuserBackground {
 
   async handleMessage(message, sender, sendResponse) {
     try {
+      // Ensure modules are loaded
+      if (!this.storageManager || !this.blockingManager || !this.pomodoroTimer || !this.taskManager) {
+        sendResponse({ success: false, error: 'Extension modules not yet loaded' });
+        return;
+      }
+
       switch (message.action) {
         case 'getStatus':
           const status = await this.getExtensionStatus();
@@ -115,6 +142,14 @@ class FocuserBackground {
   }
 
   async getExtensionStatus() {
+    if (!this.blockingManager || !this.pomodoroTimer || !this.taskManager) {
+      return {
+        blocking: { enabled: false },
+        pomodoro: { running: false },
+        tasks: []
+      };
+    }
+
     const [blockingStatus, pomodoroStatus, tasks] = await Promise.all([
       this.blockingManager.getStatus(),
       this.pomodoroTimer.getStatus(),
@@ -129,6 +164,12 @@ class FocuserBackground {
   }
 
   async handleInstall() {
+    // Ensure modules are loaded before handling install
+    if (!this.storageManager || !this.blockingManager) {
+      console.error('Cannot handle install: modules not yet loaded');
+      return;
+    }
+
     // Set up default settings
     await this.storageManager.setDefaults();
     

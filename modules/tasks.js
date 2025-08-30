@@ -1,12 +1,20 @@
 // Task manager for Focuser extension
-import { StorageManager } from './storage.js';
 
 export class TaskManager {
   constructor() {
-    this.storageManager = new StorageManager();
+    this.storageManager = null;
+  }
+
+  async ensureStorageManager() {
+    if (!this.storageManager) {
+      const { StorageManager } = await import('./storage.js');
+      this.storageManager = new StorageManager();
+    }
   }
 
   async addTask(taskData) {
+    await this.ensureStorageManager();
+    
     const tasks = await this.storageManager.getTasks();
     
     const newTask = {
@@ -33,6 +41,8 @@ export class TaskManager {
   }
 
   async updateTask(taskId, updates) {
+    await this.ensureStorageManager();
+    
     const tasks = await this.storageManager.getTasks();
     const taskIndex = tasks.findIndex(task => task.id === taskId);
     
@@ -68,6 +78,8 @@ export class TaskManager {
   }
 
   async deleteTask(taskId) {
+    await this.ensureStorageManager();
+    
     const tasks = await this.storageManager.getTasks();
     const taskIndex = tasks.findIndex(task => task.id === taskId);
     
@@ -89,6 +101,8 @@ export class TaskManager {
   }
 
   async getTasks(filter = {}) {
+    await this.ensureStorageManager();
+    
     const allTasks = await this.storageManager.getTasks();
     
     let filteredTasks = allTasks;
@@ -136,6 +150,8 @@ export class TaskManager {
   }
 
   async getTask(taskId) {
+    await this.ensureStorageManager();
+    
     const tasks = await this.storageManager.getTasks();
     return tasks.find(task => task.id === taskId);
   }
@@ -166,6 +182,8 @@ export class TaskManager {
   }
 
   async getTaskStats() {
+    await this.ensureStorageManager();
+    
     const tasks = await this.storageManager.getTasks();
     
     const stats = {
@@ -199,6 +217,8 @@ export class TaskManager {
   }
 
   async importTasks(tasksJson) {
+    await this.ensureStorageManager();
+    
     try {
       const importedTasks = JSON.parse(tasksJson);
       const existingTasks = await this.getTasks();

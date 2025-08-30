@@ -1,16 +1,24 @@
 // Pomodoro timer manager for Focuser extension
-import { StorageManager } from './storage.js';
 
 export class PomodoroTimer {
   constructor() {
-    this.storageManager = new StorageManager();
+    this.storageManager = null;
     this.isRunning = false;
     this.isPaused = false;
     this.currentSession = null;
     this.sessionCount = 0;
   }
 
+  async ensureStorageManager() {
+    if (!this.storageManager) {
+      const { StorageManager } = await import('./storage.js');
+      this.storageManager = new StorageManager();
+    }
+  }
+
   async start(customDuration = null) {
+    await this.ensureStorageManager();
+    
     if (this.isRunning && !this.isPaused) {
       console.log('Timer is already running');
       return;
@@ -110,6 +118,8 @@ export class PomodoroTimer {
   }
 
   async completeSession() {
+    await this.ensureStorageManager();
+    
     if (!this.currentSession) return;
 
     const sessionType = this.currentSession.type;
@@ -193,6 +203,8 @@ export class PomodoroTimer {
   }
 
   async getSettings() {
+    await this.ensureStorageManager();
+    
     return {
       workDuration: await this.storageManager.getSetting('pomodoroWorkDuration'),
       breakDuration: await this.storageManager.getSetting('pomodoroBreakDuration'),
