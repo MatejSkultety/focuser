@@ -273,34 +273,12 @@ class FocuserPopup {
       return;
     }
 
-    tasksList.innerHTML = filteredTasks.map(task => `
-      <div class="task-item priority-${task.priority} ${task.status === 'completed' ? 'task-completed' : ''}" data-task-id="${task.id}">
-        <input type="checkbox" class="task-checkbox" ${task.status === 'completed' ? 'checked' : ''} 
-               data-action="toggle-complete" data-task-id="${task.id}">
-        <div class="task-content">
-          <div class="task-title">${this.escapeHtml(task.title)}</div>
-          <div class="task-meta">
-            <span class="priority">${task.priority}</span>
-            ${task.category ? `<span class="category">${this.escapeHtml(task.category)}</span>` : ''}
-            ${task.estimatedTime ? `<span class="time">${task.estimatedTime}min</span>` : ''}
-          </div>
-        </div>
-        <div class="task-actions">
-          <button class="task-action-btn" data-action="edit-task" data-task-id="${task.id}" title="Edit">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="m18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-          </button>
-          <button class="task-action-btn" data-action="delete-task" data-task-id="${task.id}" title="Delete">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <polyline points="3,6 5,6 21,6"></polyline>
-              <path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1,2-2h4a2,2 0 0,1,2,2v2"></path>
-            </svg>
-          </button>
-        </div>
-      </div>
-    `).join('');
+    // Use the more secure DOM creation method
+    tasksList.innerHTML = '';
+    filteredTasks.forEach(task => {
+      const taskElement = this.createTaskElement(task);
+      tasksList.appendChild(taskElement);
+    });
 
     // Add event delegation for task interactions
     this.setupTaskEventListeners(tasksList);
@@ -514,9 +492,94 @@ class FocuserPopup {
   }
 
   escapeHtml(text) {
+    if (text == null) return '';
     const div = document.createElement('div');
-    div.textContent = text;
+    div.textContent = String(text);
     return div.innerHTML;
+  }
+
+  // More secure method: create DOM elements programmatically
+  createTaskElement(task) {
+    const taskDiv = document.createElement('div');
+    taskDiv.className = `task-item priority-${this.escapeHtml(task.priority)} ${task.status === 'completed' ? 'task-completed' : ''}`;
+    taskDiv.setAttribute('data-task-id', task.id);
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'task-checkbox';
+    checkbox.checked = task.status === 'completed';
+    checkbox.setAttribute('data-action', 'toggle-complete');
+    checkbox.setAttribute('data-task-id', task.id);
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'task-content';
+
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'task-title';
+    titleDiv.textContent = task.title;
+
+    const metaDiv = document.createElement('div');
+    metaDiv.className = 'task-meta';
+
+    const prioritySpan = document.createElement('span');
+    prioritySpan.className = 'priority';
+    prioritySpan.textContent = task.priority;
+    metaDiv.appendChild(prioritySpan);
+
+    if (task.category) {
+      const categorySpan = document.createElement('span');
+      categorySpan.className = 'category';
+      categorySpan.textContent = task.category;
+      metaDiv.appendChild(categorySpan);
+    }
+
+    if (task.estimatedTime) {
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'time';
+      timeSpan.textContent = `${task.estimatedTime}min`;
+      metaDiv.appendChild(timeSpan);
+    }
+
+    contentDiv.appendChild(titleDiv);
+    contentDiv.appendChild(metaDiv);
+
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'task-actions';
+
+    // Edit button
+    const editBtn = document.createElement('button');
+    editBtn.className = 'task-action-btn';
+    editBtn.setAttribute('data-action', 'edit-task');
+    editBtn.setAttribute('data-task-id', task.id);
+    editBtn.title = 'Edit';
+    editBtn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+        <path d="m18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+      </svg>
+    `;
+
+    // Delete button  
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'task-action-btn';
+    deleteBtn.setAttribute('data-action', 'delete-task');
+    deleteBtn.setAttribute('data-task-id', task.id);
+    deleteBtn.title = 'Delete';
+    deleteBtn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <polyline points="3,6 5,6 21,6"></polyline>
+        <path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1,2-2h4a2,2 0 0,1,2,2v2"></path>
+      </svg>
+    `;
+
+    actionsDiv.appendChild(editBtn);
+    actionsDiv.appendChild(deleteBtn);
+
+    taskDiv.appendChild(checkbox);
+    taskDiv.appendChild(contentDiv);
+    taskDiv.appendChild(actionsDiv);
+
+    return taskDiv;
   }
 }
 
