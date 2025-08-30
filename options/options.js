@@ -180,25 +180,43 @@ class FocuserOptions {
   renderBlockedSites() {
     const sitesList = document.getElementById('blockedSitesList');
     
+    // Clear previous content
+    sitesList.innerHTML = '';
+
     if (this.blockedSites.length === 0) {
-      sitesList.innerHTML = `
-        <div class="empty-sites">
-          <p>No blocked websites configured.</p>
-          <p>Add websites above to start blocking distracting content.</p>
-        </div>
-      `;
+      const emptyDiv = document.createElement('div');
+      emptyDiv.className = 'empty-sites';
+
+      const p1 = document.createElement('p');
+      p1.textContent = 'No blocked websites configured.';
+      emptyDiv.appendChild(p1);
+
+      const p2 = document.createElement('p');
+      p2.textContent = 'Add websites above to start blocking distracting content.';
+      emptyDiv.appendChild(p2);
+
+      sitesList.appendChild(emptyDiv);
       return;
     }
 
-    sitesList.innerHTML = this.blockedSites.map(site => `
-      <div class="site-item">
-        <span class="site-url">${this.escapeHtml(site)}</span>
-        <button class="remove-site-btn" data-action="remove-site" data-site="${this.escapeHtml(site)}">
-          Remove
-        </button>
-      </div>
-    `).join('');
+    this.blockedSites.forEach(site => {
+      const siteItem = document.createElement('div');
+      siteItem.className = 'site-item';
 
+      const siteSpan = document.createElement('span');
+      siteSpan.className = 'site-url';
+      siteSpan.textContent = site;
+      siteItem.appendChild(siteSpan);
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-site-btn';
+      removeBtn.setAttribute('data-action', 'remove-site');
+      removeBtn.setAttribute('data-site', site);
+      removeBtn.textContent = 'Remove';
+      siteItem.appendChild(removeBtn);
+
+      sitesList.appendChild(siteItem);
+    });
     // Add event delegation for site removal
     this.setupSiteEventListeners(sitesList);
   }
