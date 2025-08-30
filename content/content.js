@@ -18,8 +18,8 @@ class FocuserContent {
       this.handleMessage(message, sender, sendResponse);
     });
 
-    // Monitor for timer updates
-    this.startTimerMonitoring();
+    // Check for existing timer on page load
+    await this.checkExistingTimer();
     
     console.log('Focuser content script initialized');
   }
@@ -247,9 +247,17 @@ class FocuserContent {
 
   async pauseTimer() {
     try {
-      await this.sendMessage({ action: 'pausePomodoro' });
+      // Check current timer status to determine if we should pause or resume
+      const response = await this.sendMessage({ action: 'getTimerStatus' });
+      if (response.success && response.data.isRunning) {
+        if (response.data.isPaused) {
+          await this.sendMessage({ action: 'resumePomodoro' });
+        } else {
+          await this.sendMessage({ action: 'pausePomodoro' });
+        }
+      }
     } catch (error) {
-      console.error('Error pausing timer:', error);
+      console.error('Error toggling timer pause:', error);
     }
   }
 
@@ -262,31 +270,33 @@ class FocuserContent {
     }
   }
 
-  startTimerMonitoring() {
-    // Check for timer updates every 10 seconds
-    setInterval(async () => {
-      try {
-        const response = await this.sendMessage({ action: 'getTimerStatus' });
-        if (response.success && response.data.isRunning) {
-          const timerData = {
-            sessionType: response.data.sessionType || 'Work Session',
-            timeRemaining: this.formatTime(response.data.timeRemaining),
-            progress: response.data.progress || 0,
-            isPaused: response.data.isPaused || false
-          };
-          
-          if (!this.timerOverlay) {
-            this.showTimerOverlay(timerData);
-          } else {
-            this.updateTimerDisplay(timerData);
-          }
-        } else if (this.timerOverlay) {
-          this.hideTimerOverlay();
-        }
-      } catch (error) {
-        // Silent fail for timer monitoring
+  async checkExistingTimer() {
+    try {
+      const response = await this.sendMessage({ action: 'getTimerStatus' });
+      if (response.success && response.data.isRunning) {
+        const timerData = {
+          sessionType: response.data.currentSession?.type === 'work' ? 'Work Session' : 
+                      response.data.currentSession?.type === 'break' ? 'Break Time' : 
+                      response.data.currentSession?.type === 'longBreak' ? 'Long Break' : 'Session',
+          timeRemaining: this.formatTime(response.data.timeRemaining),
+          progress: this.calculateProgress(response.data), // Pass the raw response data
+          isPaused: response.data.isPaused || false
+        };
+        
+        this.showTimerOverlay(timerData);
       }
-    }, 10000);
+    } catch (error) {
+      // Silent fail for timer check
+      console.debug('No existing timer found or error checking timer status');
+    }
+  }
+
+  calculateProgress(timerData) {
+    if (!timerData.currentSession || !timerData.isRunning) return 0;
+    
+    const totalDuration = timerData.currentSession.duration * 60 * 1000; // Convert to milliseconds
+    const elapsed = totalDuration - timerData.timeRemaining;
+    return Math.max(0, Math.min(100, (elapsed / totalDuration) * 100));
   }
 
   formatTime(milliseconds) {

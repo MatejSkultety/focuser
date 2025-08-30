@@ -45,13 +45,6 @@ class FocuserBackground {
   }
 
   setupEventListeners() {
-    // Listen for tab updates to check blocked websites
-    chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-      if (changeInfo.status === 'complete' && tab.url && this.blockingManager) {
-        this.blockingManager.checkAndBlockUrl(tab.url, tabId);
-      }
-    });
-
     // Listen for alarm events (for pomodoro timer)
     chrome.alarms.onAlarm.addListener((alarm) => {
       if (this.pomodoroTimer) {
@@ -107,6 +100,11 @@ class FocuserBackground {
           sendResponse({ success: true });
           break;
 
+        case 'resumePomodoro':
+          await this.pomodoroTimer.resume();
+          sendResponse({ success: true });
+          break;
+
         case 'stopPomodoro':
           await this.pomodoroTimer.stop();
           sendResponse({ success: true });
@@ -130,6 +128,26 @@ class FocuserBackground {
         case 'getTasks':
           const tasks = await this.taskManager.getTasks();
           sendResponse({ success: true, data: tasks });
+          break;
+
+        case 'getTimerStatus':
+          const timerStatus = await this.pomodoroTimer.getStatus();
+          sendResponse({ success: true, data: timerStatus });
+          break;
+
+        case 'logBypassRequest':
+          // Log the bypass request (could be stored in storage or sent to analytics)
+          console.log('Bypass request:', {
+            url: message.url,
+            reason: message.reason,
+            timestamp: new Date().toISOString()
+          });
+          sendResponse({ success: true });
+          break;
+
+        case 'temporaryUnblock':
+          await this.blockingManager.temporaryUnblock(message.url, message.duration);
+          sendResponse({ success: true });
           break;
 
         default:

@@ -126,6 +126,15 @@ export class BlockingManager {
     });
 
     if (isBlocked) {
+      // Check for temporary unblock
+      const tempUnblocks = await this.storageManager.getSetting('temporaryUnblocks') || {};
+      const tempUnblockExpiration = tempUnblocks[hostname];
+      
+      if (tempUnblockExpiration && tempUnblockExpiration > Date.now()) {
+        console.log(`Temporarily allowed access to: ${url}`);
+        return false; // Don't block, temporary access granted
+      }
+      
       await this.storageManager.incrementStatistic('sitesBlocked');
       console.log(`Blocked access to: ${url}`);
       return true;
@@ -168,6 +177,43 @@ export class BlockingManager {
     if (index > -1) {
       blockedSites.splice(index, 1);
       await this.updateBlockedSites(blockedSites);
+    }
+  }
+
+  async temporaryUnblock(url, duration) {
+    await this.ensureStorageManager();
+    
+    // Store the temporary unblock with expiration time
+    const hostname = new URL(url).hostname.replace(/^www\./, '');
+    const expirationTime = Date.now() + duration;
+    
+    const tempUnblocks = await this.storageManager.getSetting('temporaryUnblocks') || {};
+    tempUnblocks[hostname] = expirationTime;
+    
+    await this.storageManager.setSetting('temporaryUnblocks', tempUnblocks);
+    
+    // Clean up expired entries while we're at it
+    await this.cleanupExpiredUnblocks();
+    
+    console.log(`Temporarily unblocked ${hostname} for ${duration/1000/60} minutes`);
+  }
+
+  async cleanupExpiredUnblocks() {
+    await this.ensureStorageManager();
+    
+    const tempUnblocks = await this.storageManager.getSetting('temporaryUnblocks') || {};
+    const now = Date.now();
+    let hasChanges = false;
+    
+    for (const [hostname, expiration] of Object.entries(tempUnblocks)) {
+      if (expiration < now) {
+        delete tempUnblocks[hostname];
+        hasChanges = true;
+      }
+    }
+    
+    if (hasChanges) {
+      await this.storageManager.setSetting('temporaryUnblocks', tempUnblocks);
     }
   }
 }
