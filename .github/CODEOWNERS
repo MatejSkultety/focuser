@@ -1,11 +1,11 @@
-# This file defines code ownership for the repository
-# Users listed here will be automatically requested for review on PRs
+# Global code owners for all files in the repository
+# This ensures that all changes require review and approval from the repository owner
+# before they can be merged into the main branch.
 
-# Global ownership - MatejSkultety owns everything by default
+# Repository owner must approve all changes
 * @MatejSkultety
 
-# Specific areas (can be expanded as the project grows)
-/modules/ @MatejSkultety
-/background.js @MatejSkultety
-/manifest.json @MatejSkultety
-/.github/ @MatejSkultety
+# Specific protection for critical files
+README.md @MatejSkultety
+LICENSE @MatejSkultety
+.github/ @MatejSkultety
