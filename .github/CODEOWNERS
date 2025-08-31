@@ -1,0 +1,11 @@
+# Global code owners for all files in the repository
+# This ensures that all changes require review and approval from the repository owner
+# before they can be merged into the main branch.
+
+# Repository owner must approve all changes
+* @MatejSkultety
+
+# Specific protection for critical files
+README.md @MatejSkultety
+LICENSE @MatejSkultety
+.github/ @MatejSkultety
