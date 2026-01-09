@@ -15,6 +15,7 @@ class FocuserPopup {
   async init() {
     this.setupEventListeners();
     await this.loadExtensionStatus();
+    await this.loadSettings();
     this.startUIUpdates();
   }
 
@@ -29,6 +30,11 @@ class FocuserPopup {
     // Website blocking toggle
     document.getElementById('blockingToggle').addEventListener('change', (e) => {
       this.toggleBlocking(e.target.checked);
+    });
+
+    // YouTube hide watch next toggle
+    document.getElementById('youtubeHideWatchNextToggle').addEventListener('change', (e) => {
+      this.toggleYouTubeHideWatchNext(e.target.checked);
     });
 
     // Pomodoro timer controls
@@ -123,11 +129,15 @@ class FocuserPopup {
   async loadExtensionStatus() {
     try {
       const response = await this.sendMessage({ action: 'getStatus' });
-      if (response.success) {
-        this.updateUI(response.data);
+      if (!response?.success) {
+        if (response?.transportError) {
+          console.debug('Extension status unavailable:', response.error);
+        }
+        return;
       }
+      this.updateUI(response.data);
     } catch (error) {
-      console.error('Error loading extension status:', error);
+      console.debug('Unable to load extension status:', error);
     }
   }
 
@@ -144,6 +154,35 @@ class FocuserPopup {
 
     // Update timer status
     this.updateTimerUI(status.pomodoro);
+  }
+
+  async loadSettings() {
+    try {
+      const response = await this.sendMessage({ action: 'getSettings' });
+      if (!response?.success) {
+        if (response?.transportError) {
+          console.debug('Settings unavailable:', response.error);
+        }
+        return;
+      }
+      const enabled = Boolean(response.settings?.youtubeHideWatchNext);
+      this.updateYouTubeHideWatchNextUI(enabled);
+    } catch (error) {
+      console.debug('Unable to load settings:', error);
+    }
+  }
+
+  updateYouTubeHideWatchNextUI(enabled) {
+    const toggle = document.getElementById('youtubeHideWatchNextToggle');
+    const status = document.getElementById('youtubeHideWatchNextStatus');
+
+    if (toggle) {
+      toggle.checked = enabled;
+    }
+
+    if (status) {
+      status.textContent = enabled ? 'Enabled' : 'Disabled';
+    }
   }
 
   updateTimerUI(pomodoroStatus) {
@@ -188,6 +227,31 @@ class FocuserPopup {
       console.error('Error toggling blocking:', error);
       // Revert toggle state
       document.getElementById('blockingToggle').checked = !enabled;
+    }
+  }
+
+  async toggleYouTubeHideWatchNext(enabled) {
+    try {
+      await this.sendMessage({
+        action: 'updateSettings',
+        settings: { youtubeHideWatchNext: enabled }
+      });
+      this.updateYouTubeHideWatchNextUI(enabled);
+    } catch (error) {
+      console.error('Error updating YouTube setting:', error);
+      await this.refreshYouTubeHideWatchNextUI();
+    }
+  }
+
+  async refreshYouTubeHideWatchNextUI() {
+    try {
+      const response = await this.sendMessage({ action: 'getSettings' });
+      if (response?.success) {
+        const enabled = Boolean(response.settings?.youtubeHideWatchNext);
+        this.updateYouTubeHideWatchNextUI(enabled);
+      }
+    } catch (error) {
+      console.debug('Unable to refresh YouTube setting:', error);
     }
   }
 
@@ -474,10 +538,14 @@ class FocuserPopup {
   }
 
   async sendMessage(message) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       chrome.runtime.sendMessage(message, (response) => {
         if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+          resolve({ 
+            success: false, 
+            error: chrome.runtime.lastError.message, 
+            transportError: true 
+          });
         } else {
           resolve(response);
         }

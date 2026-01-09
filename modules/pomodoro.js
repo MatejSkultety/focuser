@@ -1,4 +1,5 @@
 // Pomodoro timer manager for Focuser extension
+import { StorageManager } from './storage.js';
 
 export class PomodoroTimer {
   constructor() {
@@ -14,7 +15,6 @@ export class PomodoroTimer {
 
   async ensureStorageManager() {
     if (!this.storageManager) {
-      const { StorageManager } = await import('./storage.js');
       this.storageManager = new StorageManager();
     }
   }

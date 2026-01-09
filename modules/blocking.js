@@ -1,5 +1,6 @@
 // Website blocking manager for Focuser extension
 import { normalizeSite, extractHostname, matchesHost } from './utils.js';
+import { StorageManager } from './storage.js';
 
 export class BlockingManager {
   constructor() {
@@ -9,7 +10,6 @@ export class BlockingManager {
 
   async ensureStorageManager() {
     if (!this.storageManager) {
-      const { StorageManager } = await import('./storage.js');
       this.storageManager = new StorageManager();
     }
   }

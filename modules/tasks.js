@@ -1,4 +1,5 @@
 // Task manager for Focuser extension
+import { StorageManager } from './storage.js';
 
 export class TaskManager {
   constructor() {
@@ -7,7 +8,6 @@ export class TaskManager {
 
   async ensureStorageManager() {
     if (!this.storageManager) {
-      const { StorageManager } = await import('./storage.js');
       this.storageManager = new StorageManager();
     }
   }

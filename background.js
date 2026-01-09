@@ -1,4 +1,8 @@
 // Background service worker for Focuser extension
+import { BlockingManager } from './modules/blocking.js';
+import { PomodoroTimer } from './modules/pomodoro.js';
+import { TaskManager } from './modules/tasks.js';
+import { StorageManager } from './modules/storage.js';
 
 class FocuserBackground {
   constructor() {
@@ -6,25 +10,14 @@ class FocuserBackground {
     this.pomodoroTimer = null;
     this.taskManager = null;
     this.storageManager = null;
+    this.youtubeSyncInFlight = false;
+    this.youtubeDesiredState = null;
     
     this.init();
   }
 
   async init() {
     try {
-      // Dynamically import modules
-      const [
-        { BlockingManager },
-        { PomodoroTimer },
-        { TaskManager },
-        { StorageManager }
-      ] = await Promise.all([
-        import('./modules/blocking.js'),
-        import('./modules/pomodoro.js'),
-        import('./modules/tasks.js'),
-        import('./modules/storage.js')
-      ]);
-
       // Initialize instances
       this.blockingManager = new BlockingManager();
       this.pomodoroTimer = new PomodoroTimer();
@@ -37,6 +30,7 @@ class FocuserBackground {
       
       // Set up event listeners
       this.setupEventListeners();
+      await this.applyYouTubeModuleToExistingTabs();
       
       console.log('Focuser background service worker initialized');
     } catch (error) {
@@ -62,6 +56,15 @@ class FocuserBackground {
     chrome.runtime.onInstalled.addListener((details) => {
       if (details.reason === 'install') {
         this.handleInstall();
+      }
+    });
+
+    chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+      if (changeInfo.url) {
+        this.handleYouTubeTabUpdate(tabId, changeInfo.url)
+          .catch((error) => {
+            console.debug('Unable to handle YouTube tab update:', tabId, error);
+          });
       }
     });
   }
@@ -116,6 +119,9 @@ class FocuserBackground {
             this.blockingManager.isBlocking = updatedSettings.blockingEnabled;
             await this.blockingManager.updateBlockingRules();
           }
+
+          const isYouTubeHideEnabled = Boolean(updatedSettings.youtubeHideWatchNext);
+          await this.queueYouTubeSync(isYouTubeHideEnabled);
 
           sendResponse({ success: true });
           break;
@@ -226,6 +232,161 @@ class FocuserBackground {
     await this.blockingManager.setupDefaultRules();
     
     console.log('Focuser extension installed successfully');
+  }
+
+  async getYouTubeHideWatchNextEnabled() {
+    const data = await this.storageManager.get(['settings']);
+    return Boolean(data.settings?.youtubeHideWatchNext);
+  }
+
+  isYouTubeWatchUrl(url) {
+    if (typeof url !== 'string') return false;
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== 'https:') return false;
+      const host = parsed.hostname;
+      return (host === 'www.youtube.com' || host === 'youtube.com') && parsed.pathname === '/watch';
+    } catch {
+      return false;
+    }
+  }
+
+  async handleYouTubeTabUpdate(tabId, url) {
+    if (!this.isYouTubeWatchUrl(url)) return;
+    if (await this.getYouTubeHideWatchNextEnabled()) {
+      await this.injectYouTubeModule(tabId);
+      await this.setYouTubeModuleEnabledState(tabId, true);
+    }
+  }
+
+  async applyYouTubeModuleToExistingTabs() {
+    if (!this.storageManager) return;
+    if (!(await this.getYouTubeHideWatchNextEnabled())) return;
+
+    const tabs = await chrome.tabs.query({ url: ['https://www.youtube.com/watch*', 'https://youtube.com/watch*'] });
+    for (const tab of tabs) {
+      try {
+        await this.injectYouTubeModule(tab.id);
+        await this.setYouTubeModuleEnabledState(tab.id, true);
+      } catch (error) {
+        console.debug('Unable to apply YouTube module to tab:', tab.id, error);
+      }
+    }
+  }
+
+  async syncYouTubeModule(enabled) {
+    const tabs = await chrome.tabs.query({ url: ['https://www.youtube.com/watch*', 'https://youtube.com/watch*'] });
+    for (const tab of tabs) {
+      try {
+        if (enabled) {
+          await this.injectYouTubeModule(tab.id);
+          await this.setYouTubeModuleEnabledState(tab.id, true);
+        } else {
+          await this.removeYouTubeModule(tab.id);
+        }
+      } catch (error) {
+        console.debug('Unable to sync YouTube module for tab:', tab.id, error);
+      }
+    }
+  }
+
+  async queueYouTubeSync(enabled) {
+    this.youtubeDesiredState = Boolean(enabled);
+    if (this.youtubeSyncInFlight) return;
+
+    this.youtubeSyncInFlight = true;
+    try {
+      while (this.youtubeDesiredState !== null) {
+        const desired = this.youtubeDesiredState;
+        this.youtubeDesiredState = null;
+        await this.syncYouTubeModule(desired);
+      }
+    } finally {
+      this.youtubeSyncInFlight = false;
+    }
+  }
+
+  async getYouTubeModuleFlags(tabId) {
+    try {
+      const results = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => ({
+          hasScript: Boolean(window.__focuserYTHideWatchNext),
+          hasCss: Boolean(window.__focuserYTHideWatchNextCss)
+        })
+      });
+      return results?.[0]?.result || { hasScript: false, hasCss: false };
+    } catch (error) {
+      return { hasScript: false, hasCss: false };
+    }
+  }
+
+  async setYouTubeCssFlag(tabId, enabled) {
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        args: [Boolean(enabled)],
+        func: (value) => {
+          window.__focuserYTHideWatchNextCss = value;
+        }
+      });
+    } catch (error) {
+      // Ignore tabs without access
+    }
+  }
+
+  async injectYouTubeModule(tabId) {
+    const flags = await this.getYouTubeModuleFlags(tabId);
+
+    if (!flags.hasScript) {
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId },
+          files: ['modules/youtube_hide_watchnext/content.js']
+        });
+      } catch (error) {
+        console.debug('Unable to inject YouTube module script:', error);
+      }
+    }
+
+    if (!flags.hasCss) {
+      try {
+        await chrome.scripting.insertCSS({
+          target: { tabId },
+          files: ['modules/youtube_hide_watchnext/styles.css']
+        });
+        await this.setYouTubeCssFlag(tabId, true);
+      } catch (error) {
+        console.debug('Unable to inject YouTube module CSS:', error);
+      }
+    }
+  }
+
+  async removeYouTubeModule(tabId) {
+    try {
+      await chrome.scripting.removeCSS({
+        target: { tabId },
+        files: ['modules/youtube_hide_watchnext/styles.css']
+      });
+      await this.setYouTubeCssFlag(tabId, false);
+      await this.setYouTubeModuleEnabledState(tabId, false);
+    } catch (error) {
+      // Ignore tabs without access
+    }
+  }
+
+  async setYouTubeModuleEnabledState(tabId, enabled) {
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        args: [Boolean(enabled)],
+        func: (value) => {
+          window.__focuserYTHideWatchNext?.setEnabled(value);
+        }
+      });
+    } catch (error) {
+      // Ignore tabs without access
+    }
   }
 }
 
