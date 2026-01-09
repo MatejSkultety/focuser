@@ -306,8 +306,9 @@ class FocuserPopup {
   }
 
   handleTaskClick(event) {
-    const action = event.target.getAttribute('data-action');
-    const taskId = event.target.getAttribute('data-task-id');
+    const actionElement = event.target.closest('[data-action]');
+    const action = actionElement?.getAttribute('data-action');
+    const taskId = actionElement?.getAttribute('data-task-id');
     
     if (!action || !taskId) return;
     
@@ -322,8 +323,9 @@ class FocuserPopup {
   }
 
   handleTaskChange(event) {
-    const action = event.target.getAttribute('data-action');
-    const taskId = event.target.getAttribute('data-task-id');
+    const actionElement = event.target.closest('[data-action]');
+    const action = actionElement?.getAttribute('data-action');
+    const taskId = actionElement?.getAttribute('data-task-id');
     
     if (action === 'toggle-complete' && taskId) {
       this.toggleTaskComplete(taskId, event.target.checked);

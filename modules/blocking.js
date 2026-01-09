@@ -74,11 +74,11 @@ export class BlockingManager {
     const rules = [];
     
     sites.forEach((site, index) => {
-      // Remove protocol and www if present
-      const cleanSite = site.replace(/^https?:\/\//, '').replace(/^www\./, '');
+      const cleanSite = this.normalizeSite(site);
+      const baseId = (index * 2) + 1;
       
       rules.push({
-        id: index + 1,
+        id: baseId,
         priority: 1,
         action: {
           type: 'redirect',
@@ -94,7 +94,7 @@ export class BlockingManager {
 
       // Also block without subdomain
       rules.push({
-        id: index + 1000,
+        id: baseId + 1,
         priority: 1,
         action: {
           type: 'redirect',
@@ -118,12 +118,9 @@ export class BlockingManager {
     if (!this.isBlocking) return false;
 
     const blockedSites = await this.storageManager.getBlockedSites();
-    const hostname = new URL(url).hostname.replace(/^www\./, '');
+    const hostname = this.normalizeSite(this.extractHostname(url));
 
-    const isBlocked = blockedSites.some(site => {
-      const cleanSite = site.replace(/^https?:\/\//, '').replace(/^www\./, '');
-      return hostname.includes(cleanSite);
-    });
+    const isBlocked = blockedSites.some(site => this.matchesHost(hostname, site));
 
     if (isBlocked) {
       // Check for temporary unblock
@@ -184,7 +181,7 @@ export class BlockingManager {
     await this.ensureStorageManager();
     
     // Store the temporary unblock with expiration time
-    const hostname = new URL(url).hostname.replace(/^www\./, '');
+    const hostname = this.normalizeSite(this.extractHostname(url));
     const expirationTime = Date.now() + duration;
     
     const tempUnblocks = await this.storageManager.getSetting('temporaryUnblocks') || {};
@@ -215,5 +212,24 @@ export class BlockingManager {
     if (hasChanges) {
       await this.storageManager.setSetting('temporaryUnblocks', tempUnblocks);
     }
+  }
+
+  normalizeSite(site) {
+    if (!site) return '';
+    return String(site).replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
+  }
+
+  extractHostname(urlOrHost) {
+    try {
+      return new URL(urlOrHost).hostname;
+    } catch {
+      return String(urlOrHost);
+    }
+  }
+
+  matchesHost(hostname, site) {
+    const cleanSite = this.normalizeSite(site);
+    if (!cleanSite) return false;
+    return hostname === cleanSite || hostname.endsWith(`.${cleanSite}`);
   }
 }

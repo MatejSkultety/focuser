@@ -90,6 +90,27 @@ class FocuserBackground {
           sendResponse({ success: true });
           break;
 
+        case 'getSettings': {
+          const data = await this.storageManager.get(['settings']);
+          sendResponse({ 
+            success: true, 
+            settings: { 
+              ...this.storageManager.defaults.settings,
+              ...(data.settings || {})
+            } 
+          });
+          break;
+        }
+
+        case 'updateSettings':
+          await this.storageManager.set({ settings: message.settings });
+          if (typeof message.settings?.blockingEnabled === 'boolean') {
+            this.blockingManager.isBlocking = message.settings.blockingEnabled;
+            await this.blockingManager.updateBlockingRules();
+          }
+          sendResponse({ success: true });
+          break;
+
         case 'startPomodoro':
           await this.pomodoroTimer.start(message.duration);
           sendResponse({ success: true });
