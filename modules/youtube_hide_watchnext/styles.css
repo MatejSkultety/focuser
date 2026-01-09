@@ -1,0 +1,11 @@
+[data-focuser-yt-watch="true"] .html5-video-player .ytp-endscreen-content,
+[data-focuser-yt-watch="true"] .html5-video-player .ytp-endscreen,
+[data-focuser-yt-watch="true"] .html5-video-player .ytp-ce-element,
+[data-focuser-yt-watch="true"] .html5-video-player .ytp-ce-covering-overlay,
+[data-focuser-yt-watch="true"] .html5-video-player .ytp-ce-expanding-overlay,
+[data-focuser-yt-watch="true"] .html5-video-player .ytp-pause-overlay,
+[data-focuser-yt-watch="true"] .html5-video-player .ytp-pause-overlay-container,
+[data-focuser-yt-watch="true"] .html5-video-player .ytp-pause-overlay-controls,
+[data-focuser-yt-watch="true"] .html5-video-player .ytp-upnext {
+  display: none !important;
+}

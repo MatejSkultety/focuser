@@ -15,6 +15,7 @@ class FocuserPopup {
   async init() {
     this.setupEventListeners();
     await this.loadExtensionStatus();
+    await this.loadSettings();
     this.startUIUpdates();
   }
 
@@ -29,6 +30,11 @@ class FocuserPopup {
     // Website blocking toggle
     document.getElementById('blockingToggle').addEventListener('change', (e) => {
       this.toggleBlocking(e.target.checked);
+    });
+
+    // YouTube hide watch next toggle
+    document.getElementById('youtubeHideWatchNextToggle').addEventListener('change', (e) => {
+      this.toggleYouTubeHideWatchNext(e.target.checked);
     });
 
     // Pomodoro timer controls
@@ -146,6 +152,31 @@ class FocuserPopup {
     this.updateTimerUI(status.pomodoro);
   }
 
+  async loadSettings() {
+    try {
+      const response = await this.sendMessage({ action: 'getSettings' });
+      if (response.success) {
+        const enabled = Boolean(response.settings?.youtubeHideWatchNext);
+        this.updateYouTubeHideWatchNextUI(enabled);
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    }
+  }
+
+  updateYouTubeHideWatchNextUI(enabled) {
+    const toggle = document.getElementById('youtubeHideWatchNextToggle');
+    const status = document.getElementById('youtubeHideWatchNextStatus');
+
+    if (toggle) {
+      toggle.checked = enabled;
+    }
+
+    if (status) {
+      status.textContent = enabled ? 'Enabled' : 'Disabled';
+    }
+  }
+
   updateTimerUI(pomodoroStatus) {
     const timerDisplay = document.getElementById('timerDisplay');
     const timerSession = document.getElementById('timerSession');
@@ -188,6 +219,19 @@ class FocuserPopup {
       console.error('Error toggling blocking:', error);
       // Revert toggle state
       document.getElementById('blockingToggle').checked = !enabled;
+    }
+  }
+
+  async toggleYouTubeHideWatchNext(enabled) {
+    try {
+      await this.sendMessage({
+        action: 'updateSettings',
+        settings: { youtubeHideWatchNext: enabled }
+      });
+      this.updateYouTubeHideWatchNextUI(enabled);
+    } catch (error) {
+      console.error('Error updating YouTube setting:', error);
+      this.updateYouTubeHideWatchNextUI(!enabled);
     }
   }
 

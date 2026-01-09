@@ -6,6 +6,7 @@ export class StorageManager {
         blockingEnabled: false,
         strictMode: false,
         notifications: true,
+        youtubeHideWatchNext: false,
         pomodoroWorkDuration: 25,
         pomodoroBreakDuration: 5,
         pomodoroLongBreakDuration: 15,

@@ -179,6 +179,18 @@ input:checked + .toggle-slider:before {
     font-size: 13px;
 }
 
+.module-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.status-detail {
+    font-size: 12px;
+}
+
 .status-text {
     font-weight: 500;
 }
