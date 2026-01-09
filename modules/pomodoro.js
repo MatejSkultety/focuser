@@ -298,7 +298,7 @@ export class PomodoroTimer {
         try {
           if (tab.active) {
             await chrome.tabs.sendMessage(tab.id, message);
-          } else if (now - this.lastBackgroundBroadcast >= backgroundThrottleMs) {
+          } else if (!backgroundSent && now - this.lastBackgroundBroadcast >= backgroundThrottleMs) {
             await chrome.tabs.sendMessage(tab.id, message);
             backgroundSent = true;
           }
