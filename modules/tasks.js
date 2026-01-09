@@ -208,7 +208,8 @@ export class TaskManager {
   }
 
   generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    // substring used instead of deprecated substr
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
   }
 
   async exportTasks() {
