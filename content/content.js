@@ -1,4 +1,6 @@
 // Focuser Extension Content Script
+import { normalizeSite, matchesHost } from '../modules/utils.js';
+
 class FocuserContent {
   constructor() {
     this.isBlocked = false;
@@ -28,10 +30,10 @@ class FocuserContent {
     try {
       const response = await this.sendMessage({ action: 'getStatus' });
       if (response.success && response.data.blocking.enabled) {
-        const currentHost = this.normalizeSite(window.location.hostname);
+        const currentHost = normalizeSite(window.location.hostname);
         const blockedSites = response.data.blocking.blockedSites;
-        
-        this.isBlocked = blockedSites.some(site => this.matchesHost(currentHost, site));
+
+        this.isBlocked = blockedSites.some(site => matchesHost(currentHost, site));
 
         if (this.isBlocked) {
           this.showBlockedOverlay();
@@ -303,17 +305,6 @@ class FocuserContent {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  }
-
-  normalizeSite(site) {
-    if (!site) return '';
-    return String(site).replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
-  }
-
-  matchesHost(hostname, site) {
-    const cleanSite = this.normalizeSite(site);
-    if (!cleanSite) return false;
-    return hostname === cleanSite || hostname.endsWith(`.${cleanSite}`);
   }
 
   async sendMessage(message) {

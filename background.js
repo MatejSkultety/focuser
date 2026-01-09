@@ -102,14 +102,24 @@ class FocuserBackground {
           break;
         }
 
-        case 'updateSettings':
-          await this.storageManager.set({ settings: message.settings });
-          if (typeof message.settings?.blockingEnabled === 'boolean') {
-            this.blockingManager.isBlocking = message.settings.blockingEnabled;
+        case 'updateSettings': {
+          const data = await this.storageManager.get(['settings']);
+          const updatedSettings = {
+            ...this.storageManager.defaults.settings,
+            ...(data.settings || {}),
+            ...(message.settings || {})
+          };
+
+          await this.storageManager.set({ settings: updatedSettings });
+
+          if (typeof updatedSettings.blockingEnabled === 'boolean') {
+            this.blockingManager.isBlocking = updatedSettings.blockingEnabled;
             await this.blockingManager.updateBlockingRules();
           }
+
           sendResponse({ success: true });
           break;
+        }
 
         case 'startPomodoro':
           await this.pomodoroTimer.start(message.duration);

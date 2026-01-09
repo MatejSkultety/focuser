@@ -1,4 +1,5 @@
 // Website blocking manager for Focuser extension
+import { normalizeSite, extractHostname, matchesHost } from './utils.js';
 
 export class BlockingManager {
   constructor() {
@@ -74,7 +75,7 @@ export class BlockingManager {
     const rules = [];
     
     sites.forEach((site, index) => {
-      const cleanSite = this.normalizeSite(site);
+      const cleanSite = normalizeSite(site);
       const baseId = (index * 2) + 1;
       
       rules.push({
@@ -118,9 +119,9 @@ export class BlockingManager {
     if (!this.isBlocking) return false;
 
     const blockedSites = await this.storageManager.getBlockedSites();
-    const hostname = this.normalizeSite(this.extractHostname(url));
+    const hostname = normalizeSite(extractHostname(url));
 
-    const isBlocked = blockedSites.some(site => this.matchesHost(hostname, site));
+    const isBlocked = blockedSites.some(site => matchesHost(hostname, site));
 
     if (isBlocked) {
       // Check for temporary unblock
@@ -181,7 +182,7 @@ export class BlockingManager {
     await this.ensureStorageManager();
     
     // Store the temporary unblock with expiration time
-    const hostname = this.normalizeSite(this.extractHostname(url));
+    const hostname = normalizeSite(extractHostname(url));
     const expirationTime = Date.now() + duration;
     
     const tempUnblocks = await this.storageManager.getSetting('temporaryUnblocks') || {};
@@ -214,22 +215,4 @@ export class BlockingManager {
     }
   }
 
-  normalizeSite(site) {
-    if (!site) return '';
-    return String(site).replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
-  }
-
-  extractHostname(urlOrHost) {
-    try {
-      return new URL(urlOrHost).hostname;
-    } catch {
-      return String(urlOrHost);
-    }
-  }
-
-  matchesHost(hostname, site) {
-    const cleanSite = this.normalizeSite(site);
-    if (!cleanSite) return false;
-    return hostname === cleanSite || hostname.endsWith(`.${cleanSite}`);
-  }
 }
