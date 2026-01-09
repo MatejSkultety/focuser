@@ -9,6 +9,7 @@ export class PomodoroTimer {
     this.sessionCount = 0;
     this.updateInterval = null;
     this.backgroundScript = null;
+    this.lastBackgroundBroadcast = 0;
   }
 
   async ensureStorageManager() {
@@ -21,7 +22,11 @@ export class PomodoroTimer {
   async start(customDuration = null) {
     await this.ensureStorageManager();
     
-    if (this.isRunning && !this.isPaused) {
+    // If already running, resume instead of restarting to preserve session state
+    if (this.isRunning) {
+      if (this.isPaused) {
+        return this.resume();
+      }
       console.log('Timer is already running');
       return;
     }
@@ -157,7 +162,7 @@ export class PomodoroTimer {
     }
 
     // Determine next session type
-    let nextSessionType = 'work';
+    let nextSessionType;
     let nextDuration;
 
     if (sessionType === 'work') {
@@ -273,6 +278,9 @@ export class PomodoroTimer {
   async broadcastTimerUpdate(timerData) {
     try {
       const tabs = await chrome.tabs.query({});
+      const now = Date.now();
+      const backgroundThrottleMs = 5000; // Reduce background updates to every 5s
+      let backgroundSent = false;
       const message = {
         action: 'updateTimer',
         data: {
@@ -288,10 +296,19 @@ export class PomodoroTimer {
 
       for (const tab of tabs) {
         try {
-          await chrome.tabs.sendMessage(tab.id, message);
+          if (tab.active) {
+            await chrome.tabs.sendMessage(tab.id, message);
+          } else if (!backgroundSent && now - this.lastBackgroundBroadcast >= backgroundThrottleMs) {
+            await chrome.tabs.sendMessage(tab.id, message);
+            backgroundSent = true;
+          }
         } catch (error) {
           // Ignore errors for tabs without content scripts
         }
+      }
+
+      if (backgroundSent) {
+        this.lastBackgroundBroadcast = now;
       }
     } catch (error) {
       console.error('Error broadcasting timer update:', error);

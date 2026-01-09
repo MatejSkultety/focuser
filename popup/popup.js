@@ -105,6 +105,13 @@ class FocuserPopup {
 
     this.currentTab = tabName;
 
+    // Manage UI timer updates based on active tab
+    if (tabName === 'focus') {
+      this.startUIUpdates();
+    } else {
+      this.stopUIUpdates();
+    }
+
     // Load tab-specific data
     if (tabName === 'tasks') {
       this.loadTasks();
@@ -197,7 +204,7 @@ class FocuserPopup {
     try {
       const pauseBtn = document.getElementById('pauseTimer');
       if (pauseBtn.textContent === 'Resume') {
-        await this.sendMessage({ action: 'startPomodoro' }); // Resume
+        await this.sendMessage({ action: 'resumePomodoro' }); // Resume existing session
       } else {
         await this.sendMessage({ action: 'pausePomodoro' });
       }
@@ -299,8 +306,9 @@ class FocuserPopup {
   }
 
   handleTaskClick(event) {
-    const action = event.target.getAttribute('data-action');
-    const taskId = event.target.getAttribute('data-task-id');
+    const actionElement = event.target.closest('[data-action]');
+    const action = actionElement?.getAttribute('data-action');
+    const taskId = actionElement?.getAttribute('data-task-id');
     
     if (!action || !taskId) return;
     
@@ -315,8 +323,9 @@ class FocuserPopup {
   }
 
   handleTaskChange(event) {
-    const action = event.target.getAttribute('data-action');
-    const taskId = event.target.getAttribute('data-task-id');
+    const actionElement = event.target.closest('[data-action]');
+    const action = actionElement?.getAttribute('data-action');
+    const taskId = actionElement?.getAttribute('data-task-id');
     
     if (action === 'toggle-complete' && taskId) {
       this.toggleTaskComplete(taskId, event.target.checked);
@@ -385,7 +394,6 @@ class FocuserPopup {
 
   async saveTask() {
     const form = document.getElementById('taskForm');
-    const formData = new FormData(form);
     
     const task = {
       title: document.getElementById('taskTitle').value.trim(),
@@ -447,12 +455,22 @@ class FocuserPopup {
   }
 
   startUIUpdates() {
-    // Update timer display every second
+    // Ensure only one interval runs
+    this.stopUIUpdates();
+
+    // Update timer display every second while on focus tab
     this.timerInterval = setInterval(() => {
       if (this.currentTab === 'focus') {
         this.loadExtensionStatus();
       }
     }, 1000);
+  }
+
+  stopUIUpdates() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
   }
 
   async sendMessage(message) {
@@ -490,13 +508,6 @@ class FocuserPopup {
     setTimeout(() => {
       notification.remove();
     }, 3000);
-  }
-
-  escapeHtml(text) {
-    if (text == null) return '';
-    const div = document.createElement('div');
-    div.textContent = String(text);
-    return div.innerHTML;
   }
 
   // More secure method: create DOM elements programmatically

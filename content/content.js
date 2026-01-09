@@ -1,4 +1,6 @@
 // Focuser Extension Content Script
+import { normalizeSite, matchesHost } from '../modules/utils.js';
+
 class FocuserContent {
   constructor() {
     this.isBlocked = false;
@@ -28,13 +30,10 @@ class FocuserContent {
     try {
       const response = await this.sendMessage({ action: 'getStatus' });
       if (response.success && response.data.blocking.enabled) {
-        const currentUrl = window.location.hostname.replace(/^www\./, '');
+        const currentHost = normalizeSite(window.location.hostname);
         const blockedSites = response.data.blocking.blockedSites;
-        
-        this.isBlocked = blockedSites.some(site => {
-          const cleanSite = site.replace(/^https?:\/\//, '').replace(/^www\./, '');
-          return currentUrl.includes(cleanSite);
-        });
+
+        this.isBlocked = blockedSites.some(site => matchesHost(currentHost, site));
 
         if (this.isBlocked) {
           this.showBlockedOverlay();
@@ -126,7 +125,8 @@ class FocuserContent {
   }
 
   handleBlockedOverlayClick(event) {
-    const action = event.target.getAttribute('data-action');
+    const actionElement = event.target.closest('[data-action]');
+    const action = actionElement?.getAttribute('data-action');
     
     switch (action) {
       case 'go-back':
@@ -160,7 +160,7 @@ class FocuserContent {
         // Temporarily allow access (for 5 minutes)
         await this.sendMessage({
           action: 'temporaryUnblock',
-          url: window.location.hostname,
+          url: window.location.href,
           duration: 5 * 60 * 1000 // 5 minutes
         });
 
@@ -209,7 +209,8 @@ class FocuserContent {
   }
 
   handleTimerOverlayClick(event) {
-    const action = event.target.getAttribute('data-action');
+    const actionElement = event.target.closest('[data-action]');
+    const action = actionElement?.getAttribute('data-action');
     
     switch (action) {
       case 'close-timer':

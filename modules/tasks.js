@@ -51,6 +51,7 @@ export class TaskManager {
     }
 
     const task = tasks[taskIndex];
+    const previousStatus = task.status;
     
     // Update fields
     Object.keys(updates).forEach(key => {
@@ -62,10 +63,10 @@ export class TaskManager {
     task.updatedAt = Date.now();
 
     // Handle status changes
-    if (updates.status === 'completed' && task.status !== 'completed') {
+    if (updates.status === 'completed' && previousStatus !== 'completed') {
       task.completedAt = Date.now();
       await this.storageManager.incrementStatistic('tasksCompleted');
-    } else if (updates.status !== 'completed' && task.status === 'completed') {
+    } else if (updates.status !== 'completed' && previousStatus === 'completed') {
       task.completedAt = null;
       await this.storageManager.incrementStatistic('tasksCompleted', -1);
     }
@@ -208,7 +209,8 @@ export class TaskManager {
   }
 
   generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    // substring used instead of deprecated substr
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
   }
 
   async exportTasks() {
