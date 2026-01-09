@@ -129,11 +129,11 @@ class FocuserPopup {
   async loadExtensionStatus() {
     try {
       const response = await this.sendMessage({ action: 'getStatus' });
-      if (response.success) {
+      if (response?.success) {
         this.updateUI(response.data);
       }
     } catch (error) {
-      console.error('Error loading extension status:', error);
+      console.debug('Unable to load extension status:', error);
     }
   }
 
@@ -155,12 +155,12 @@ class FocuserPopup {
   async loadSettings() {
     try {
       const response = await this.sendMessage({ action: 'getSettings' });
-      if (response.success) {
+      if (response?.success) {
         const enabled = Boolean(response.settings?.youtubeHideWatchNext);
         this.updateYouTubeHideWatchNextUI(enabled);
       }
     } catch (error) {
-      console.error('Error loading settings:', error);
+      console.debug('Unable to load settings:', error);
     }
   }
 
@@ -518,10 +518,10 @@ class FocuserPopup {
   }
 
   async sendMessage(message) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       chrome.runtime.sendMessage(message, (response) => {
         if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+          resolve({ success: false, error: chrome.runtime.lastError.message });
         } else {
           resolve(response);
         }

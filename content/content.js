@@ -1,5 +1,17 @@
 // Focuser Extension Content Script
-import { normalizeSite, matchesHost } from '../modules/utils.js';
+const normalizeSite = (site) => {
+  if (!site) return '';
+  return String(site)
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/$/, '');
+};
+
+const matchesHost = (hostname, site) => {
+  const cleanSite = normalizeSite(site);
+  if (!cleanSite) return false;
+  return hostname === cleanSite || hostname.endsWith(`.${cleanSite}`);
+};
 
 class FocuserContent {
   constructor() {
