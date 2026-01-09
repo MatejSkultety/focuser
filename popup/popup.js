@@ -129,9 +129,13 @@ class FocuserPopup {
   async loadExtensionStatus() {
     try {
       const response = await this.sendMessage({ action: 'getStatus' });
-      if (response?.success) {
-        this.updateUI(response.data);
+      if (!response?.success) {
+        if (response?.transportError) {
+          console.debug('Extension status unavailable:', response.error);
+        }
+        return;
       }
+      this.updateUI(response.data);
     } catch (error) {
       console.debug('Unable to load extension status:', error);
     }
@@ -155,10 +159,14 @@ class FocuserPopup {
   async loadSettings() {
     try {
       const response = await this.sendMessage({ action: 'getSettings' });
-      if (response?.success) {
-        const enabled = Boolean(response.settings?.youtubeHideWatchNext);
-        this.updateYouTubeHideWatchNextUI(enabled);
+      if (!response?.success) {
+        if (response?.transportError) {
+          console.debug('Settings unavailable:', response.error);
+        }
+        return;
       }
+      const enabled = Boolean(response.settings?.youtubeHideWatchNext);
+      this.updateYouTubeHideWatchNextUI(enabled);
     } catch (error) {
       console.debug('Unable to load settings:', error);
     }
@@ -231,7 +239,19 @@ class FocuserPopup {
       this.updateYouTubeHideWatchNextUI(enabled);
     } catch (error) {
       console.error('Error updating YouTube setting:', error);
-      this.updateYouTubeHideWatchNextUI(!enabled);
+      await this.refreshYouTubeHideWatchNextUI();
+    }
+  }
+
+  async refreshYouTubeHideWatchNextUI() {
+    try {
+      const response = await this.sendMessage({ action: 'getSettings' });
+      if (response?.success) {
+        const enabled = Boolean(response.settings?.youtubeHideWatchNext);
+        this.updateYouTubeHideWatchNextUI(enabled);
+      }
+    } catch (error) {
+      console.debug('Unable to refresh YouTube setting:', error);
     }
   }
 
@@ -521,7 +541,11 @@ class FocuserPopup {
     return new Promise((resolve) => {
       chrome.runtime.sendMessage(message, (response) => {
         if (chrome.runtime.lastError) {
-          resolve({ success: false, error: chrome.runtime.lastError.message });
+          resolve({ 
+            success: false, 
+            error: chrome.runtime.lastError.message, 
+            transportError: true 
+          });
         } else {
           resolve(response);
         }

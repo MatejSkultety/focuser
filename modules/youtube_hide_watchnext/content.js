@@ -1,6 +1,7 @@
 (() => {
   const stateKey = '__focuserYTHideWatchNext';
   const root = document.documentElement;
+  const navListenerAttr = 'data-focuser-yt-nav-listener';
 
   const isYouTubeWatch = () => {
     const host = window.location.hostname;
@@ -35,10 +36,13 @@
 
   window[stateKey] = controller;
 
-  const handleNavigation = () => controller.refresh();
-  window.addEventListener('yt-navigate-finish', handleNavigation, true);
-  document.addEventListener('yt-navigate-finish', handleNavigation, true);
-  window.addEventListener('popstate', handleNavigation, true);
+  if (!root.hasAttribute(navListenerAttr)) {
+    const handleNavigation = () => controller.refresh();
+    window.addEventListener('yt-navigate-finish', handleNavigation, true);
+    document.addEventListener('yt-navigate-finish', handleNavigation, true);
+    window.addEventListener('popstate', handleNavigation, true);
+    root.setAttribute(navListenerAttr, 'true');
+  }
 
   controller.refresh();
 })();
