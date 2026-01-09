@@ -1,4 +1,8 @@
 // Background service worker for Focuser extension
+import { BlockingManager } from './modules/blocking.js';
+import { PomodoroTimer } from './modules/pomodoro.js';
+import { TaskManager } from './modules/tasks.js';
+import { StorageManager } from './modules/storage.js';
 
 class FocuserBackground {
   constructor() {
@@ -12,19 +16,6 @@ class FocuserBackground {
 
   async init() {
     try {
-      // Dynamically import modules
-      const [
-        { BlockingManager },
-        { PomodoroTimer },
-        { TaskManager },
-        { StorageManager }
-      ] = await Promise.all([
-        import('./modules/blocking.js'),
-        import('./modules/pomodoro.js'),
-        import('./modules/tasks.js'),
-        import('./modules/storage.js')
-      ]);
-
       // Initialize instances
       this.blockingManager = new BlockingManager();
       this.pomodoroTimer = new PomodoroTimer();
