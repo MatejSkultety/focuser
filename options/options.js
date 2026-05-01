@@ -30,6 +30,10 @@ class FocuserOptions {
       this.updateSetting('strictMode', e.target.checked);
     });
 
+    document.getElementById('instagramDmOnlyEnabled').addEventListener('change', (e) => {
+      this.updateSetting('instagramDmOnlyEnabled', e.target.checked);
+    });
+
     document.getElementById('notificationsEnabled').addEventListener('change', (e) => {
       this.updateSetting('notifications', e.target.checked);
     });
@@ -144,6 +148,7 @@ class FocuserOptions {
     // Populate form fields with current settings
     document.getElementById('blockingEnabled').checked = this.settings.blockingEnabled || false;
     document.getElementById('strictMode').checked = this.settings.strictMode || false;
+    document.getElementById('instagramDmOnlyEnabled').checked = this.settings.instagramDmOnlyEnabled || false;
     document.getElementById('notificationsEnabled').checked = this.settings.notifications !== false;
     document.getElementById('soundEnabled').checked = this.settings.soundEnabled || false;
     document.getElementById('blockingNotifications').checked = this.settings.blockingNotifications || false;
