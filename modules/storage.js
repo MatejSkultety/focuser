@@ -5,6 +5,7 @@ export class StorageManager {
       settings: {
         blockingEnabled: false,
         strictMode: false,
+        instagramDmOnlyEnabled: false,
         notifications: true,
         youtubeHideWatchNext: false,
         pomodoroWorkDuration: 25,

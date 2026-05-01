@@ -58,7 +58,10 @@ export class BlockingManager {
       // Add new rules if blocking is enabled
       if (this.isBlocking) {
         const blockedSites = await this.storageManager.getBlockedSites();
-        const rules = this.createBlockingRules(blockedSites);
+        const instagramDmOnlyEnabled = await this.storageManager.getSetting('instagramDmOnlyEnabled');
+        const rules = this.createBlockingRules(blockedSites, {
+          instagramDmOnlyEnabled: Boolean(instagramDmOnlyEnabled)
+        });
         
         if (rules.length > 0) {
           await chrome.declarativeNetRequest.updateDynamicRules({
@@ -71,31 +74,14 @@ export class BlockingManager {
     }
   }
 
-  createBlockingRules(sites) {
+  createBlockingRules(sites, options = {}) {
     const rules = [];
-    
-    sites.forEach((site, index) => {
-      const cleanSite = normalizeSite(site);
-      const baseId = (index * 2) + 1;
-      
-      rules.push({
-        id: baseId,
-        priority: 1,
-        action: {
-          type: 'redirect',
-          redirect: {
-            extensionPath: '/blocked/blocked.html'
-          }
-        },
-        condition: {
-          urlFilter: `*://*.${cleanSite}/*`,
-          resourceTypes: ['main_frame']
-        }
-      });
+    const instagramDmOnlyEnabled = Boolean(options.instagramDmOnlyEnabled);
+    let nextId = 1;
 
-      // Also block without subdomain
+    const addRedirectRule = (urlFilter, extraConditions = {}) => {
       rules.push({
-        id: baseId + 1,
+        id: nextId,
         priority: 1,
         action: {
           type: 'redirect',
@@ -104,10 +90,30 @@ export class BlockingManager {
           }
         },
         condition: {
-          urlFilter: `*://${cleanSite}/*`,
-          resourceTypes: ['main_frame']
+          urlFilter,
+          resourceTypes: ['main_frame'],
+          ...extraConditions
         }
       });
+      nextId += 1;
+    };
+
+    if (instagramDmOnlyEnabled) {
+      addRedirectRule('*://www.instagram.com/*', {
+        excludedUrlFilter: '*://www.instagram.com/direct*'
+      });
+    }
+    
+    sites.forEach((site) => {
+      const cleanSite = normalizeSite(site);
+
+      if (instagramDmOnlyEnabled && cleanSite === 'instagram.com') {
+        return;
+      }
+      
+      addRedirectRule(`*://*.${cleanSite}/*`);
+      // Also block without subdomain
+      addRedirectRule(`*://${cleanSite}/*`);
     });
 
     return rules;
@@ -153,7 +159,8 @@ export class BlockingManager {
     return {
       enabled: this.isBlocking,
       blockedSites: blockedSites,
-      strictMode: await this.storageManager.getSetting('strictMode')
+      strictMode: await this.storageManager.getSetting('strictMode'),
+      instagramDmOnlyEnabled: await this.storageManager.getSetting('instagramDmOnlyEnabled')
     };
   }
 
