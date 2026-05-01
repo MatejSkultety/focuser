@@ -19,6 +19,10 @@ class FocuserContent {
     this.overlayElement = null;
     this.timerOverlay = null;
     this.settings = {};
+    this.blockingEnabled = false;
+    this.instagramDmOnlyEnabled = false;
+    this.instagramRouteWatcherInitialized = false;
+    this.lastKnownUrl = window.location.href;
     
     this.init();
   }
@@ -42,25 +46,70 @@ class FocuserContent {
     try {
       const response = await this.sendMessage({ action: 'getStatus' });
       if (response.success && response.data.blocking.enabled) {
+        this.blockingEnabled = Boolean(response.data.blocking.enabled);
+        this.instagramDmOnlyEnabled = Boolean(response.data.blocking.instagramDmOnlyEnabled);
         const currentHost = normalizeSite(window.location.hostname);
         const blockedSites = response.data.blocking.blockedSites;
-        const instagramDmOnlyEnabled = Boolean(response.data.blocking.instagramDmOnlyEnabled);
         const isInstagramHost = window.location.hostname === 'www.instagram.com';
         const isInstagramRoot = window.location.hostname === 'instagram.com';
         const isInstagramDirect = isInstagramHost && window.location.pathname.startsWith('/direct');
 
         this.isBlocked = blockedSites.some(site => matchesHost(currentHost, site));
 
-        if (instagramDmOnlyEnabled && (isInstagramHost || isInstagramRoot)) {
+        if (this.instagramDmOnlyEnabled && (isInstagramHost || isInstagramRoot)) {
           this.isBlocked = isInstagramHost && !isInstagramDirect;
         }
 
         if (this.isBlocked) {
           this.showBlockedOverlay();
         }
+
+        if (this.instagramDmOnlyEnabled && isInstagramHost) {
+          this.setupInstagramDmOnlyWatcher();
+        }
       }
     } catch (error) {
       console.error('Error checking blocking status:', error);
+    }
+  }
+
+  setupInstagramDmOnlyWatcher() {
+    if (this.instagramRouteWatcherInitialized) return;
+    this.instagramRouteWatcherInitialized = true;
+
+    const onRouteChange = () => {
+      const currentUrl = window.location.href;
+      if (currentUrl === this.lastKnownUrl) return;
+      this.lastKnownUrl = currentUrl;
+      this.handleInstagramRouteChange();
+    };
+
+    const originalPushState = history.pushState.bind(history);
+    history.pushState = (...args) => {
+      originalPushState(...args);
+      onRouteChange();
+    };
+
+    const originalReplaceState = history.replaceState.bind(history);
+    history.replaceState = (...args) => {
+      originalReplaceState(...args);
+      onRouteChange();
+    };
+
+    window.addEventListener('popstate', onRouteChange);
+    window.addEventListener('hashchange', onRouteChange);
+
+    setInterval(onRouteChange, 1000);
+  }
+
+  handleInstagramRouteChange() {
+    if (!this.blockingEnabled || !this.instagramDmOnlyEnabled) return;
+    if (window.location.hostname !== 'www.instagram.com') return;
+
+    const isInstagramDirect = window.location.pathname.startsWith('/direct');
+    if (!isInstagramDirect) {
+      const blockedUrl = chrome.runtime.getURL('blocked/blocked.html');
+      window.location.replace(blockedUrl);
     }
   }
 
