@@ -44,8 +44,16 @@ class FocuserContent {
       if (response.success && response.data.blocking.enabled) {
         const currentHost = normalizeSite(window.location.hostname);
         const blockedSites = response.data.blocking.blockedSites;
+        const instagramDmOnlyEnabled = Boolean(response.data.blocking.instagramDmOnlyEnabled);
+        const isInstagramHost = window.location.hostname === 'www.instagram.com';
+        const isInstagramRoot = window.location.hostname === 'instagram.com';
+        const isInstagramDirect = isInstagramHost && window.location.pathname.startsWith('/direct');
 
         this.isBlocked = blockedSites.some(site => matchesHost(currentHost, site));
+
+        if (instagramDmOnlyEnabled && (isInstagramHost || isInstagramRoot)) {
+          this.isBlocked = isInstagramHost && !isInstagramDirect;
+        }
 
         if (this.isBlocked) {
           this.showBlockedOverlay();
